@@ -52,7 +52,7 @@ module ReversiMethods
     turn_succeed = false
     Position::DIRECTIONS.each do |direction|
       next_pos = pos.next_position(direction)
-      next if next_pos.stone_color(board) == stone_color || !turn(copied_board, next_pos, stone_color, direction, dry_run: true)
+      next if next_pos.stone_color(board) == stone_color
       turn_succeed = true if turn(copied_board, next_pos, stone_color, direction)
     end
 
@@ -61,13 +61,17 @@ module ReversiMethods
     turn_succeed
   end
 
-  def turn(board, target_pos, attack_stone_color, direction, dry_run: false)
-    # 石を引っくり返す(ことが可能であるかを調べる)
-    return false if target_pos.out_of_board? || target_pos.stone_color(board) == BLANK_CELL
-    board[target_pos.row][target_pos.col] = attack_stone_color if !dry_run && target_pos.stone_color(board) != attack_stone_color
+  def turn(board, target_pos, attack_stone_color, direction)
+    return false if target_pos.out_of_board?
+    return false if target_pos.stone_color(board) == BLANK_CELL
+
     next_pos = target_pos.next_position(direction)
-    return true if next_pos.stone_color(board) == attack_stone_color
-    turn(board, next_pos, attack_stone_color, direction, dry_run:)
+    if (next_pos.stone_color(board) == attack_stone_color) || turn(board, next_pos, attack_stone_color, direction)
+      board[target_pos.row][target_pos.col] = attack_stone_color
+      true
+    else
+      false
+    end
   end
 
   def finished?(board)
